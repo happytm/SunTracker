@@ -133,7 +133,7 @@ void Calculate_Sun_Position(int hour, int minute, int second, int day, int month
   long JDate, JDx;
   int zone = 0;
   JDate      = JulianDate(year, month, day);
-  JD_frac = (hour - (12+Timezone) + minute / 60.0 + second / 3600.0) / 24.0 - 0.5;
+  JD_frac = (hour - (24+Timezone) + minute / 60.0 + second / 3600.0) / 24.0 - 0.5;
   T          = JDate - 2451545; T = (T + JD_frac) / 36525.0;
   L0         = DEG_TO_RAD * fmod(280.46645 + 36000.76983 * T, 360);
   M          = DEG_TO_RAD * fmod(357.5291 + 35999.0503 * T, 360);
