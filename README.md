@@ -10,5 +10,6 @@
 
 ### To Do:
 
- - Implement code for inexpensive 28BYJ-48 ULN2003 5V Stepper Motor.
- - Implement code for DC brushed motors control using L298N H Bridge.
+ - Implement code for inexpensive 28BYJ-48 ULN2003 5V Stepper Motor. https://www.youtube.com/watch?v=0qwrnUeSpYQ
+ - Implement code for DC brushed motors control using L298N H Bridge. https://www.youtube.com/watch?v=dyjo_ggEtVU
+ - Implement code for more powerful DC brushed motors using Cytron 13A DC Motor Driver MD10C. Cytron 13A DC Motor Driver MD10C
