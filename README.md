@@ -7,3 +7,8 @@
  - No photoresistors needed.
  - Tracker results verified at https://www.suncalc.org/
  - The National Renewable Energy Laboratory link to calculation details - https://www.nrel.gov/docs/fy08osti/34302.pdf
+
+### To Do:
+
+ - Implement code for inexpensive 28BYJ-48 ULN2003 5V Stepper Motor.
+ - Implement code for DC brushed motors.
