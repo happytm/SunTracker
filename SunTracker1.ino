@@ -1,7 +1,8 @@
 
  // More examples and docs see :
  // https://github.com/mcxiaoke/ESPDateTime
- // Based on https://github.com/G6EJD/ESP32_2D_Sun_Tracker
+ // Based on https://github.com/G6EJD/ESP32_2D_Sun_Tracker  Video link - https://www.youtube.com/watch?v=R1tFOd0s6uk&t=2s
+
  
 
 #include <Arduino.h>
