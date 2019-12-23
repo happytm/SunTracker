@@ -1,7 +1,7 @@
 // Minimal NTP Time Demo with DST correction
 //
 // Uses built-in ESP8266 LWIP sntp library to get time
-// Based on https://github.com/G6EJD/ESP32_2D_Sun_Tracker
+// Based on https://github.com/G6EJD/ESP32_2D_Sun_Tracker  Video link - https://www.youtube.com/watch?v=R1tFOd0s6uk&t=2s
 
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>
