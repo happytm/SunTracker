@@ -11,4 +11,4 @@
 ### To Do:
 
  - Implement code for inexpensive 28BYJ-48 ULN2003 5V Stepper Motor.
- - Implement code for DC brushed motors.
+ - Implement code for DC brushed motors control using L298N H Bridge.
