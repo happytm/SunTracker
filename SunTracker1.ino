@@ -1,10 +1,9 @@
 
- // More examples and docs see :
- // https://github.com/mcxiaoke/ESPDateTime
- // Based on https://github.com/G6EJD/ESP32_2D_Sun_Tracker  Video link - https://www.youtube.com/watch?v=R1tFOd0s6uk&t=2s
- // The National Renewable Energy Laboratory link to calculation details - https://www.nrel.gov/docs/fy08osti/34302.pdf
-
- 
+/**
+ * More examples and docs see :
+ * https://github.com/mcxiaoke/ESPDateTime
+ *
+ */
 
 #include <Arduino.h>
 #if defined(ESP8266)
@@ -12,7 +11,7 @@
 #elif defined(ESP32)
 #include <WiFi.h>
 #endif
-
+// #include "config.h"
 #include "ESPDateTime.h"
 #include <Servo.h>   // https://github.com/jkb-git/ESP32Servo
 
@@ -74,7 +73,7 @@ void setupDateTime() {
                 p.getMonth(), p.getMonthDay(), p.getHours(), p.getMinutes(),
                 p.getSeconds(), p.getTime(), p.getTimeZone());
 
-  Hour = (p.getHours());
+  Hour = p.getHours();
   Minute = p.getMinutes();
   Day = p.getMonthDay();
   Month = p.getMonth();
@@ -124,7 +123,7 @@ void loop()
   }
 
   
-  Calculate_Sun_Position(Hour.toInt(), Minute.toInt(), 0, Day.toInt(), Month.toInt(), Year.toInt());    // parameters are HH:MM:SS DD:MM:YY start from midnight and work out all 24 hour positions.
+  Calculate_Sun_Position(Hour.toInt(), Minute.toInt(), 0, Day.toInt(), (Month.toInt() + 1), Year.toInt());    // parameters are HH:MM:SS DD:MM:YY start from midnight and work out all 24 hour positions.
   
   Azi_servo.write(map(sun_azimuth, 90, 270, 180, 0));        // Align to azimuth
   if (sun_elevation < 0) sun_elevation = 0; // Point at horizon if less than horizon
@@ -135,12 +134,12 @@ void loop()
 
 
 void Calculate_Sun_Position(int hour, int minute, int second, int day, int month, int year) {
-  float T, JD_frac, JDate_frac, L0, M, e, C, L_true, f, R, GrHrAngle, Obl, RA, Decl, HrAngle;
+  float T, JD_frac, L0, M, e, C, L_true, f, R, GrHrAngle, Obl, RA, Decl, HrAngle;
   long JDate, JDx;
   int zone = 0;
   JDate      = JulianDate(year, month, day);
   JD_frac = (hour - (24+Timezone) + minute / 60.0 + second / 3600.0) / 24.0 - 0.5;
-  T          = JDate - 2451545; T = (T + JDate_frac) / 36525.0;
+  T          = JDate - 2451545; T = (T + JD_frac) / 36525.0;
   L0         = DEG_TO_RAD * fmod(280.46645 + 36000.76983 * T, 360);
   M          = DEG_TO_RAD * fmod(357.5291 + 35999.0503 * T, 360);
   e          = 0.016708617 - 0.000042037 * T;
@@ -157,14 +156,14 @@ void Calculate_Sun_Position(int hour, int minute, int second, int day, int month
   HrAngle    = DEG_TO_RAD * GrHrAngle + Lon - RA;
   elevation  = asin(sin(Lat) * sin(Decl) + cos(Lat) * (cos(Decl) * cos(HrAngle)));
   azimuth    = PI + atan2(sin(HrAngle), cos(HrAngle) * sin(Lat) - tan(Decl) * cos(Lat)); // Azimuth measured east from north, so 0 degrees is North
-  sun_azimuth   = azimuth   / DEG_TO_RAD;
+  sun_azimuth   = (azimuth   / DEG_TO_RAD);
   sun_elevation = elevation / DEG_TO_RAD;
   Serial.println();
-  Serial.print("Azimuth: "); Serial.print(sun_azimuth); Serial.print("  Elevation: "); Serial.println(sun_elevation);
+  Serial.println(); Serial.print("Sun Elevation: "); Serial.print(sun_elevation); Serial.print(" Sun Azimuth: "); Serial.print(sun_azimuth); Serial.println();
   Serial.println("Longitude and latitude " + String(Lon / DEG_TO_RAD, 3) + " " + String(Lat / DEG_TO_RAD, 3));
   Serial.println("Year\tMonth\tDay\tHour\tMinute\tElevation\tELServo\tAzimuth\tAZServo");
   Serial.print(String(year) + "\t" + String(month) + "\t" + String(day) + "\t" + String(hour - zone) + "\t" + String(minute) + "\t");
-  Serial.println(String(elevation / DEG_TO_RAD, 0) + "\t\t" + (145 - sun_elevation) + "\t" + String(azimuth / DEG_TO_RAD, 0) + "\t" + (map(sun_azimuth, 90, 270, 180, 0)));
+  Serial.println(String(elevation / DEG_TO_RAD, 0) + "\t\t" + (145 - sun_elevation) + "\t" + String((azimuth / DEG_TO_RAD), 0) + "\t" + (map(sun_azimuth, 90, 270, 180, 0)));
   Serial.println();}
 
 long JulianDate(int year, int month, int day) {
