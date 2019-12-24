@@ -1,8 +1,7 @@
 // Minimal NTP Time Demo with DST correction
 //
 // Uses built-in ESP8266 LWIP sntp library to get time
-// Based on https://github.com/G6EJD/ESP32_2D_Sun_Tracker  Video link - https://www.youtube.com/watch?v=R1tFOd0s6uk&t=2s
-// The National Renewable Energy Laboratory link to calculation details - https://www.nrel.gov/docs/fy08osti/34302.pdf
+// Based on https://github.com/G6EJD/ESP32_2D_Sun_Tracker
 
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>
@@ -17,11 +16,11 @@
 
 // -------------- Configuration options -----------------
 
-const char* ssid = "ssid";
-const char* password = "password";
+const char* ssid = "ssid";          // your ssid
+const char* password = "password";  // your password
 
-float Lon = -75.67 * DEG_TO_RAD,
-      Lat = 43.39 * DEG_TO_RAD,
+float Lon = -75.67 * DEG_TO_RAD,    // your lon data - get it from https://www.suncalc.org/
+      Lat = 43.39 * DEG_TO_RAD,     // your lat data - get it from https://www.suncalc.org/
       elevation,
       azimuth;
 
@@ -62,12 +61,10 @@ struct dstRule dstEndRule = {"AEST", First, Sun, Apr, 2, 0};      // Standard ti
 Ticker ticker1;
 int32_t tick;
 
-
 String Hour, Minute, Day, Month, Year;
-
+int Hour24;
 Servo Azi_servo;
 Servo Ele_servo;
-
 
 // flag changed in the ticker function to start NTP Update
 bool readyForNtpUpdate = false;
@@ -102,7 +99,6 @@ void setup() {
   test_elevation(); // Stop at 145 which is vertical or 0 elevation
   delay(1000);
 }
-
 void loop()
 {
   if(readyForNtpUpdate)
@@ -122,9 +118,6 @@ void loop()
   Azi_servo.write(map(sun_azimuth, 90, 270, 180, 0));        // Align to azimuth
   if (sun_elevation < 0) sun_elevation = 0; // Point at horizon if less than horizon
   Ele_servo.write(145 - sun_elevation);  // map(value, fromLow, fromHigh, toLow, toHigh)
-  
-  
-   
   delay(5000);  // to reduce upload failures
 }
 
@@ -133,7 +126,7 @@ void Calculate_Sun_Position(int hour, int minute, int second, int day, int month
   long JDate, JDx;
   int zone = 0;
   JDate      = JulianDate(year, month, day);
-  JD_frac = (hour - (24+Timezone) + minute / 60.0 + second / 3600.0) / 24.0 - 0.5;
+  JD_frac = (Hour24 - (24+Timezone) + minute / 60.0 + second / 3600.0) / 24.0 - 0.5;
   T          = JDate - 2451545; T = (T + JD_frac) / 36525.0;
   L0         = DEG_TO_RAD * fmod(280.46645 + 36000.76983 * T, 360);
   M          = DEG_TO_RAD * fmod(357.5291 + 35999.0503 * T, 360);
@@ -153,7 +146,7 @@ void Calculate_Sun_Position(int hour, int minute, int second, int day, int month
   azimuth    = PI + atan2(sin(HrAngle), cos(HrAngle) * sin(Lat) - tan(Decl) * cos(Lat)); // Azimuth measured east from north, so 0 degrees is North
   sun_azimuth   = azimuth   / DEG_TO_RAD;
   sun_elevation = elevation / DEG_TO_RAD;
-  Serial.print("Azimuth: "); Serial.print(sun_azimuth); Serial.print("  Elevation: "); Serial.println(sun_elevation);
+  Serial.println(); Serial.print("Elevation: "); Serial.print(sun_elevation); Serial.print("  Azimuth: "); Serial.println(sun_azimuth); Serial.println();
   Serial.println("Longitude and latitude " + String(Lon / DEG_TO_RAD, 3) + " " + String(Lat / DEG_TO_RAD, 3));
   Serial.println("Year\tMonth\tDay\tHour\tMinute\tElevation\tELServo\tAzimuth\tAZServo");
   Serial.print(String(year) + "\t" + String(month) + "\t" + String(day) + "\t" + String(hour - zone) + "\t" + String(minute) + "\t");
@@ -229,9 +222,13 @@ void printTime(time_t offset)
   int hour = (timeinfo->tm_hour+11)%12+1;  // take care of noon and midnight
   sprintf(buf, "%02d/%02d/%04d %02d:%02d:%02d%s %s\n",timeinfo->tm_mon+1, timeinfo->tm_mday, timeinfo->tm_year+1900, hour, timeinfo->tm_min, timeinfo->tm_sec, timeinfo->tm_hour>=12?"pm":"am", dstAbbrev);
   Hour = hour;
+  Hour24 = timeinfo->tm_hour;
   Minute = timeinfo->tm_min;
   Day = (timeinfo->tm_mday);
   Month = (timeinfo->tm_mon+1);
   Year = (timeinfo->tm_year+1900);
   Serial.print(buf);
+  Serial.println();
+  Serial.print("Current Hour: "); 
+  Serial.println(timeinfo->tm_hour);
 }
