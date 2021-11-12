@@ -14,3 +14,4 @@
  - Implement code for DC brushed motors control using L298N H Bridge. https://www.youtube.com/watch?v=dyjo_ggEtVU
  - Implement code for more powerful DC brushed motors using Cytron 13A DC Motor Driver MD10C. https://www.youtube.com/watch?v=Rc892r--njw&t=691s
  - Implement code for MPU6050.
+ - Implement  Builtin RTC time using https://github.com/fbiego/ESP32Time
