@@ -11,8 +11,6 @@
 ### To Do:
 
  - Implement code for inexpensive 28BYJ-48 ULN2003 5V Stepper Motor. https://www.youtube.com/watch?v=0qwrnUeSpYQ
- - Implement code for DC brushed motors control using L298N H Bridge. https://www.youtube.com/watch?v=dyjo_ggEtVU
- - Implement code for DC brushed motors control using TA6586 or bts760. https://alexgyver.ru/lessons/dc-motors/  && https://github.com/GyverLibs/GyverMotor && https://www.youtube.com/watch?v=tJYDV3FFCWQ&t=8s
- - Implement code for more powerful DC brushed motors using Cytron 13A DC Motor Driver MD10C. https://www.youtube.com/watch?v=Rc892r--njw&t=691s
+ - Implement code for DC brushed motors control using TA6586 or BTS7960. https://alexgyver.ru/lessons/dc-motors/  && https://github.com/GyverLibs/GyverMotor && https://www.youtube.com/watch?v=tJYDV3FFCWQ&t=8s
  - Implement code for MPU6050.
  - Implement  Builtin RTC time using https://github.com/fbiego/ESP32Time
