@@ -12,6 +12,6 @@
 
  - Implement code for inexpensive 28BYJ-48 ULN2003 5V Stepper Motor. https://www.youtube.com/watch?v=0qwrnUeSpYQ
  - Implement code for DC brushed motors control using TA6586 or BTS7960. https://alexgyver.ru/lessons/dc-motors/  && https://github.com/GyverLibs/GyverMotor && https://www.youtube.com/watch?v=tJYDV3FFCWQ&t=8s
- - implement VNH5019A-E driver. https://www.hobbytronics.co.uk/datasheets/pololu/vnh5019.pdf bb
+ - implement VNH5019A-E driver. https://www.hobbytronics.co.uk/datasheets/pololu/vnh5019.pdf 
  - Implement code for MPU6050.
  - Implement  Builtin RTC time using https://github.com/fbiego/ESP32Time
