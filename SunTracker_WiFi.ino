@@ -6,59 +6,45 @@
 #include <WiFi.h>
 #endif
 
-#include "ESPDateTime.h"  
+#include "ESPDateTime.h"    // Thanks to : https://github.com/mcxiaoke/ESPDateTime
 
-unsigned long lastMs = 0;
-unsigned long ms = millis();
-
-const char* ssid = "HAPPYHOME";
-const char* password = "kb1henna";
+const char* ssid =     "";
+const char* password = "";
 
 int Timezone = -4;      // Adjust according to your time zone.
 
 float Lon = -75.67 * DEG_TO_RAD,
-      Lat = 43.39 * DEG_TO_RAD,
-      elevation,
-      azimuth;
+      Lat = 43.39 * DEG_TO_RAD;
+     
 
-int sun_azimuth;
-int sun_elevation;
+int sun_azimuth, sun_elevation, sunriseAzimuth;
+bool sunriseSaved;
 
 // --------- End of configuration section ---------------
 
 void setup() {
-  Serial.begin(115200);
-  delay(500);
-  
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  Serial.println("\nConnecting to WiFi");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-    }
-
-  Serial.println("\nConnected to network");
-  setupDateTime();
+  Serial.begin(115200); delay(500);
+  WiFi.mode(WIFI_STA);WiFi.begin(ssid, password);Serial.println("\nConnecting to WiFi"); while (WiFi.status() != WL_CONNECTED) {delay(500);Serial.print(".");} Serial.println("\nConnected to network");
 }
 
-void loop()
-{
-  if (millis() - ms > 5000) {
-    ms = millis();
-  
-   setupDateTime();
-  }
+void loop() {
 
+  DateTime.setTimeZone(Timezone);   // Eastern USA Time Zone (-5).
+  DateTime.setServer("us.pool.ntp.org");
+  DateTime.begin();  
   DateTimeParts p = DateTime.getParts();
   
   Calculate_Sun_Position(p.getHours(), p.getMinutes(), 0, p.getMonthDay(), (p.getMonth() + 1), p.getYear());    // parameters are HH:MM:SS DD:MM:YY start from midnight and work out all 24 hour positions.
-  Serial.println("Longitude and latitude " + String(Lon / DEG_TO_RAD, 3) + " & " + String(Lat / DEG_TO_RAD, 3));
-  Serial.print("Sun Azimuth: "); Serial.println(sun_azimuth); Serial.print("Sun Elevation: "); Serial.println(sun_elevation); 
   
-  Serial.print("Pan servo position:  "); Serial.println(map(sun_azimuth, 90, 270, 180, 0));                    // Align to azimuth
-  if (sun_elevation < 0) sun_elevation = 0;                                                                   // Point at horizon if less than horizon
-  Serial.print("Tilt servo position: "); Serial.println(145 - sun_elevation); Serial.println();                               // map(value, fromLow, fromHigh, toLow, toHigh)
+  if (sunriseSaved = false && sun_elevation > 0) {sunriseAzimuth = sun_azimuth; sunriseSaved = true;} // Record azimuth once a day after sunrise to bring tracker back at this point for the next day's start point.
+  if (sunriseSaved = true && sun_elevation < 0) {sunriseSaved = false; /*Bring tracker back to sunrise azimuth position in the evening to lock it up during the night to save it from heavy winds*/} 
+  
+  Serial.print("Current time: "); Serial.println(DateTime.toString());
+  Serial.print("Longitude: "); Serial.println(String(Lon / DEG_TO_RAD, 3)); Serial.print("Latitude: ");Serial.println(String(Lat / DEG_TO_RAD, 3));
+  Serial.print("Sun Azimuth: "); Serial.println(sun_azimuth); Serial.print("Sun Elevation: "); Serial.println(sun_elevation); 
+  Serial.print("Start Pan position:  "); Serial.println(sunriseAzimuth);                             // Set sunrise as 0 (start position).
+  Serial.print("Pan position:  "); Serial.println(map(sun_azimuth, sunriseAzimuth, 300, 0, 300));    // Align to azimuth. map(value, fromLow, fromHigh, toLow, toHigh).value ranges between (0 - 300).
+  Serial.print("Tilt position: "); Serial.println(sun_elevation); Serial.println();                  // When panel is vertical this value is 0.value ranges between (0 - 90).
   
   delay(5000);  
 }
@@ -85,10 +71,11 @@ void Calculate_Sun_Position(int hour, int minute, int second, int day, int month
   RA         = atan2(sin(L_true) * cos(Obl), cos(L_true));
   Decl       = asin(sin(Obl) * sin(L_true));
   HrAngle    = DEG_TO_RAD * GrHrAngle + Lon - RA;
-  elevation  = asin(sin(Lat) * sin(Decl) + cos(Lat) * (cos(Decl) * cos(HrAngle)));
-  azimuth    = PI + atan2(sin(HrAngle), cos(HrAngle) * sin(Lat) - tan(Decl) * cos(Lat)); // Azimuth measured east from north, so 0 degrees is North
+  float elevation  = asin(sin(Lat) * sin(Decl) + cos(Lat) * (cos(Decl) * cos(HrAngle)));
+  float azimuth    = PI + atan2(sin(HrAngle), cos(HrAngle) * sin(Lat) - tan(Decl) * cos(Lat)); // Azimuth measured east from north, so 0 degrees is North
   sun_azimuth   = (azimuth   / DEG_TO_RAD);
   sun_elevation = elevation / DEG_TO_RAD;
+  
 }
 
 long JulianDate(int year, int month, int day) {
@@ -98,15 +85,4 @@ long JulianDate(int year, int month, int day) {
   A = year / 100; B = 2 - A + A / 4;
   JDate = (long)(365.25 * (year + 4716)) + (int)(30.6001 * (month + 1)) + day + B - 1524;
   return JDate;
-}
-
-void setupDateTime() {
-  
-  DateTime.setTimeZone(Timezone);   // Eastern USA Time Zone (-5).
-  DateTime.setServer("us.pool.ntp.org");
-  DateTime.begin();  
-   
-  if (!DateTime.isTimeValid()) {Serial.println("Failed to get time from server.");}
-  delay(1000);
-  Serial.print("Current time: ");Serial.println(DateTime.toString());
 }
