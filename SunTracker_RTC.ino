@@ -3,7 +3,6 @@
 RTC_DATA_ATTR int bootCount = 0;
 RTC_DATA_ATTR int sleepMinutes = 1;      // Adjust sleep time in minutes if needed.
 RTC_DATA_ATTR int sun_azimuth, sun_elevation, panPosition, tiltPosition, sunriseAzimuth, sunriseSaved;
-RTC_DATA_ATTR uint8_t showConfig[10]; // Content of EEPROM is saved here.
 
 int timezone = 4;                 // Use 4 or 5 for eastern USA.
 float Lon = -72.71 * DEG_TO_RAD,  // Enter your Longtitude. Use www.suncalc.org.
@@ -26,40 +25,44 @@ void setup() {
   if (!bootCount)
   {
     struct tm timeinfo = getTimeStruct();
-    timeinfo.tm_hour = 03;
-    timeinfo.tm_min = 30;
+    timeinfo.tm_hour = 5;  // Enter hour in 24 hour format.
+    timeinfo.tm_min = 31;
     timeinfo.tm_sec = 00;
-    timeinfo.tm_mon = 6; // January is 0.
+    timeinfo.tm_mon = 6;    // Enter Month - 1. January is 0 & December is 11.
     timeinfo.tm_mday = 9; 
     timeinfo.tm_year = 2022 - 1900;
-
     struct timeval tv;
     tv.tv_sec = mktime(&timeinfo);
     settimeofday(&tv, NULL);
   }
   ++bootCount;
-    
-  Serial.print("Current pan position is: ");   Serial.println(panPosition);
-  Serial.print("Current tilt position is: ");  Serial.println(tiltPosition);
+  
+  Serial.print("Last pan position was:  ");   Serial.println(panPosition);
+  Serial.print("Last tilt position was: ");  Serial.println(tiltPosition);
+  
 } // End of setup.
 
 void loop() {
+  int lastPanPosition = panPosition; int lastTiltPosition = tiltPosition;
   struct tm timeinfo = getTimeStruct();
   Calculate_Sun_Position(timeinfo.tm_hour + timezone, timeinfo.tm_min, timeinfo.tm_sec, timeinfo.tm_mday, timeinfo.tm_mon + 1, timeinfo.tm_year + 1900);    // parameters are HH:MM:SS DD:MM:YYYY start from midnight and work out all 24 hour positions.
-  if (sunriseSaved = 0 && sun_elevation > 0) {sunriseAzimuth = sun_azimuth; sunriseSaved = 1;}     // Save azimuth at sunrise in RTC memory once a day after sunrise to bring tracker back at this pan position for the next day's start point.
-  if (sunriseSaved = 1 && sun_elevation < 0) {sunriseSaved = 0; /*Bring tracker back to sunrise azimuth position in the evening to lock it up during the night to save it from heavy winds*/} 
-  if (sun_azimuth > 60)  {panPosition =  sun_azimuth - sunriseAzimuth;}                             // Set pan position in RTC memory.
+  if (sunriseSaved == 0 && sun_elevation > 0) {sunriseAzimuth = sun_azimuth; sunriseSaved = 1;}     // Save azimuth at sunrise in RTC memory once a day after sunrise to bring tracker back at this pan position for the next day's start point.
+  if (sunriseSaved == 1 && sun_elevation < 0) {sunriseSaved = 0; /*Bring tracker back to sunrise azimuth position in the evening to lock it up during the night to save it from heavy winds*/} 
+  if (sun_azimuth > sunriseAzimuth)  {panPosition =  sun_azimuth - sunriseAzimuth;}                // Set pan position in RTC memory.
   if (sun_elevation > 0) {tiltPosition = sun_elevation;}                                           // Set tilt position in RTC memory.
-
+  int panMove = panPosition - lastPanPosition; int tiltMove = tiltPosition - lastTiltPosition;     // Find out the movement of both motors in degrees.
+  
   Serial.print("Current Date is: "); Serial.printf("%d/%02d/%02d \n", timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_year + 1900);
   Serial.print("Current time is: "); Serial.printf("%d:%02d:%02d \n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
-  Serial.print("Longitude: "); Serial.println(String(Lon / DEG_TO_RAD, 3)); Serial.print("Latitude: ");Serial.println(String(Lat / DEG_TO_RAD, 3));
-  Serial.print("Sun Azimuth: "); Serial.println(sun_azimuth); Serial.print("Sun Elevation: "); Serial.println(sun_elevation); 
-  Serial.print("Start Pan position:  "); Serial.println(showConfig[1]);                             // Set sunrise as 0 (start position).
-  Serial.print("Pan position:  "); Serial.println(panPosition);                                     // Align to azimuth. map(value, fromLow, fromHigh, toLow, toHigh).value ranges between (0 - 300).
-  Serial.print("Tilt position: "); Serial.println(tiltPosition); Serial.println();                  // When panel is vertical this value is 0.value ranges between (0 - 90).
-    
-  esp_sleep_enable_timer_wakeup(sleepMinutes * 60000000);            // 60000000 for 1 minute.
+  Serial.print("Longitude: "); Serial.println(String(Lon / DEG_TO_RAD, 3)); Serial.print("Latitude:   ");Serial.println(String(Lat / DEG_TO_RAD, 3));
+  Serial.print("Sun Azimuth:   "); Serial.println(sun_azimuth); Serial.print("Sun Elevation: "); Serial.println(sun_elevation); 
+  Serial.print("Sunrise Azimuth: "); Serial.println(sunriseAzimuth);        // Set sunrise as 0 (start position).
+  Serial.print("Pan position:  "); Serial.println(panPosition);                     // Value ranges between (0 - 300).
+  Serial.print("Tilt position: "); Serial.println(tiltPosition); Serial.println();  // When panel is vertical this value is 0.value ranges between (0 - 90).
+  Serial.print("Moved pan position by degrees:   "); Serial.println(panMove);       // Value ranges between (0 - 300).
+  Serial.print("Moved tilt position by degrees:  "); Serial.println(tiltMove);      // When panel is vertical this value is 0.value ranges between (0 - 90).
+ 
+  esp_sleep_enable_timer_wakeup(sleepMinutes * 60000000); // 60000000 for 1 minute.
   esp_deep_sleep_start();  
 } // End of loop.
 
