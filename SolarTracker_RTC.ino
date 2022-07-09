@@ -1,68 +1,69 @@
 #include <sys/time.h>
-#include <EEPROM.h>
 
-float Lon = -72.71 * DEG_TO_RAD,
-      Lat = 43.40 * DEG_TO_RAD;
+RTC_DATA_ATTR int bootCount = 0;
+RTC_DATA_ATTR int sleepMinutes = 1;      // Adjust sleep time in minutes if needed.
+RTC_DATA_ATTR int sun_azimuth, sun_elevation, panPosition, tiltPosition, sunriseAzimuth, sunriseSaved;
+RTC_DATA_ATTR uint8_t showConfig[10]; // Content of EEPROM is saved here.
+
+int timezone = 4;                 // Use 4 or 5 for eastern USA.
+float Lon = -72.71 * DEG_TO_RAD,  // Enter your Longtitude. Use www.suncalc.org.
+      Lat = 43.40 * DEG_TO_RAD;   // Enter your Longtitude. Use www.suncalc.org.
      
-
-int sun_azimuth, sun_elevation, sunriseAzimuth;
-bool sunriseSaved;
-
-uint8_t showConfig[20]; // Content of EEPROM is saved here.
-
 struct tm getTimeStruct()
 {
   struct tm timeinfo;
   getLocalTime(&timeinfo, 0);
   return timeinfo;
 }
+
 // --------- End of configuration section ---------------
 
 void setup() {
-  Serial.begin(115200); delay(500);
-  EEPROM.begin(20);
-   
-    EEPROM.writeByte(2, 1);  // Set sleep time in minutes.
-    EEPROM.commit(); 
-    Serial.println("Content of EEPROM is: "); EEPROM.readBytes(0, showConfig, 19); for (int i = 0; i < 19; i++) {Serial.printf("%d \n", showConfig[i]);}    
-    
-    struct tm timeinfo = getTimeStruct();
-    Serial.print("Current time is: "); Serial.printf("%d:%02d:%02d \n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
-    Serial.print("Current Azimuth is: ");   Serial.println(showConfig[0]);
-    Serial.print("Current Elevation is: "); Serial.println(showConfig[1]);
 
-    timeinfo.tm_hour = 20;
-    timeinfo.tm_min = 29;
-    timeinfo.tm_sec = 00;
-    timeinfo.tm_mon = 6;            // January is 0.
-    timeinfo.tm_mday = 8;
-    timeinfo.tm_year = 2022 - 1900; // 2022 
+  Serial.begin(115200); delay(500);
   
+  Serial.printf("Bootcount = %d\n", bootCount);
+  if (!bootCount)
+  {
+    struct tm timeinfo = getTimeStruct();
+    timeinfo.tm_hour = 01;
+    timeinfo.tm_min = 17;
+    timeinfo.tm_sec = 00;
+    timeinfo.tm_mon = 6; // January is 0.
+    timeinfo.tm_mday = 9; 
+    timeinfo.tm_year = 2022 - 1900;
+
     struct timeval tv;
     tv.tv_sec = mktime(&timeinfo);
     settimeofday(&tv, NULL);
-}
+  }
+  ++bootCount;
+    
+  Serial.print("Current pan position is: ");   Serial.println(panPosition);
+  Serial.print("Current tilt position is: ");  Serial.println(tiltPosition);
+} // End of setup.
 
 void loop() {
-
   struct tm timeinfo = getTimeStruct();
-  Calculate_Sun_Position(timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, timeinfo.tm_mday, timeinfo.tm_mon + 1, timeinfo.tm_year + 1900);    // parameters are HH:MM:SS DD:MM:YY start from midnight and work out all 24 hour positions.
+  Calculate_Sun_Position(timeinfo.tm_hour + timezone, timeinfo.tm_min, timeinfo.tm_sec, timeinfo.tm_mday, timeinfo.tm_mon + 1, timeinfo.tm_year + 1900);    // parameters are HH:MM:SS DD:MM:YYYY start from midnight and work out all 24 hour positions.
 
-  EEPROM.writeByte(0, sun_azimuth);EEPROM.writeByte(1, sun_elevation);EEPROM.commit();                // Save current position to EEPROM.
-  
-  if (sunriseSaved = false && sun_elevation > 0) {sunriseAzimuth = sun_azimuth; sunriseSaved = true;} // Record azimuth once a day after sunrise to bring tracker back at this point for the next day's start point.
-  if (sunriseSaved = true && sun_elevation < 0) {sunriseSaved = false; /*Bring tracker back to sunrise azimuth position in the evening to lock it up during the night to save it from heavy winds*/} 
-  
-  Serial.print("Current Date is: "); Serial.printf("%d/%02d/%02d \n", (timeinfo.tm_mon + 1), timeinfo.tm_mday, (timeinfo.tm_year + 1900));
+  Serial.print("Current Date is: "); Serial.printf("%d/%02d/%02d \n", timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_year + 1900);
   Serial.print("Current time is: "); Serial.printf("%d:%02d:%02d \n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
   Serial.print("Longitude: "); Serial.println(String(Lon / DEG_TO_RAD, 3)); Serial.print("Latitude: ");Serial.println(String(Lat / DEG_TO_RAD, 3));
   Serial.print("Sun Azimuth: "); Serial.println(sun_azimuth); Serial.print("Sun Elevation: "); Serial.println(sun_elevation); 
-  Serial.print("Start Pan position:  "); Serial.println(sunriseAzimuth);                             // Set sunrise as 0 (start position).
-  Serial.print("Pan position:  "); Serial.println(map(sun_azimuth, sunriseAzimuth, 300, 0, 300));    // Align to azimuth. map(value, fromLow, fromHigh, toLow, toHigh).value ranges between (0 - 300).
-  Serial.print("Tilt position: "); Serial.println(sun_elevation); Serial.println();                  // When panel is vertical this value is 0.value ranges between (0 - 90).
-  
-  delay(5000);  
-}
+  Serial.print("Start Pan position:  "); Serial.println(showConfig[1]);                             // Set sunrise as 0 (start position).
+  Serial.print("Pan position:  "); Serial.println(panPosition);                                     // Align to azimuth. map(value, fromLow, fromHigh, toLow, toHigh).value ranges between (0 - 300).
+  Serial.print("Tilt position: "); Serial.println(tiltPosition); Serial.println();                  // When panel is vertical this value is 0.value ranges between (0 - 90).
+
+  if (sunriseSaved = 0 && sun_elevation > 0) {sunriseAzimuth = sun_azimuth; sunriseSaved = 1;} // Save azimuth at sunrise in RTC memory once a day after sunrise to bring tracker back at this pan position for the next day's start point.
+  if (sunriseSaved = 1 && sun_elevation < 0) {sunriseSaved = 0; /*Bring tracker back to sunrise azimuth position in the evening to lock it up during the night to save it from heavy winds*/} 
+    
+    panPosition = map(sun_azimuth, sunriseAzimuth, 300, 0, 300);         // Set pan position in RTC memory.
+    if (sun_elevation > 0) {tiltPosition = sun_elevation;}               // Set tilt position in RTC memory.
+    
+  esp_sleep_enable_timer_wakeup(sleepMinutes * 60000000);            // 60000000 for 1 minute.
+  esp_deep_sleep_start();  
+} // End of loop.
 
 
 void Calculate_Sun_Position(int hour, int minute, int second, int day, int month, int year) {
@@ -70,7 +71,7 @@ void Calculate_Sun_Position(int hour, int minute, int second, int day, int month
   long JDate, JDx;
   
   JDate      = JulianDate(year, month, day);
-  JD_frac = (hour - hour + minute / 60.0 + second / 3600.0) / 24.0 - 0.5;
+  JD_frac    = (hour + minute / 60.0 + second / 3600.0) / 24.0 - 0.5;
   T          = JDate - 2451545; T = (T + JD_frac) / 36525.0;
   L0         = DEG_TO_RAD * fmod(280.46645 + 36000.76983 * T, 360);
   M          = DEG_TO_RAD * fmod(357.5291 + 35999.0503 * T, 360);
