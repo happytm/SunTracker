@@ -1,9 +1,4 @@
-#if defined(ESP8266)
-#include <ESP8266WiFi.h>
-#elif defined(ESP32)
 #include <WiFi.h>
-#endif
-
 #include "ESPDateTime.h"    // Thanks to : https://github.com/mcxiaoke/ESPDateTime
 
 RTC_DATA_ATTR int bootCount; 
