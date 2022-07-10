@@ -21,7 +21,7 @@ void setup() {
 
   Serial.begin(115200); delay(500);
   long upTime = bootCount * sleepMinutes;
-  Serial.printf("Up time in minutes = %d\n", upTime);
+  Serial.print("Up time "); Serial.print(upTime); Serial.println(" minutes.");
   
   if (!bootCount)
   {
