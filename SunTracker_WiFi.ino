@@ -31,7 +31,7 @@ void loop() {
   DateTimeParts p = DateTime.getParts();
   
   int lastPanPosition = panPosition; int lastTiltPosition = tiltPosition;
-  Calculate_Sun_Position(p.getHours(), p.getMinutes(), 0, p.getMonthDay(), (p.getMonth() + 1), p.getYear());    // parameters are HH:MM:SS DD:MM:YY start from midnight and work out all 24 hour positions.
+  Calculate_Sun_Position(p.getHours(), p.getMinutes(), 0, p.getMonthDay(), (p.getMonth() + 1), p.getYear());  // parameters are HH:MM:SS DD:MM:YYYY start from midnight and work out all 24 hour positions.
   
   if (sunriseSaved == 0 && sun_elevation > 0) {sunriseAzimuth = sun_azimuth; sunriseSaved = 1;}               // Save azimuth at sunrise in RTC memory once a day after sunrise to bring tracker back at this pan position for the next day's start point.
   if (sunriseSaved == 1 && sun_elevation < 0) {sunriseSaved = 0; /*Bring tracker back to sunrise azimuth position in the evening to lock it up during the night to save it from heavy winds*/} 
