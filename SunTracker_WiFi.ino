@@ -21,6 +21,14 @@ void setup() {
   long upTime = bootCount * sleepMinutes;
   Serial.print("Up time "); Serial.print(upTime); Serial.println(" minutes.");
   ++bootCount;
+  
+  Serial.print("Last pan position was:   "); Serial.println(panPosition);
+  Serial.print("Last tilt position was: ");  Serial.println(tiltPosition);
+  //ToDo using https://github.com/ruenahcmohr/EGMK :
+  //Serial.print("Now we are going to move to new pan postion target using : ");  Serial.print(pan_μs_CW); Serial.print("pan micro seconds forward and "); Serial.print(pan__μs_CW); Serial.println("pan micro seconds reverse."); 
+  //Serial.print("Now we are going to move to new tilt postion target using : ");  Serial.print(tilt_μs_CW); Serial.print("tilt micro seconds forward and "); Serial.print(tilt_μs_CCW); Serial.println("tilt micro seconds reverse."); 
+
+      
 }
 
 void loop() {
