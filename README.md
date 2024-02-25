@@ -1,10 +1,12 @@
 # SunTracker
 ## Sun Tracker using ESP32 for automatic dual axis solar tracker or heliostat.
- - Requires geo location data (Latitude and Longitude coordinates) and Daylight Saving Time (DST) offset number for the location.
+ 
+ - Requires only geo location data (Latitude and Longitude coordinates) and Daylight Saving Time (DST) offset number for the location.
+ 
  - Based on:
-   - https://github.com/G6EJD/ESP32_2D_Sun_Tracker (for sun position)
+   - https://github.com/G6EJD/ESP32_2D_Sun_Tracker (for sun position) https://www.youtube.com/watch?v=R1tFOd0s6uk&t=2s
    - https://github.com/ruenahcmohr/EGMK (for motor movement)
- - Video link - https://www.youtube.com/watch?v=R1tFOd0s6uk&t=2s
+ 
  - Uses built in arduino libraries.
  - No photoresistors or accelerometer needed.
  - Tracker results verified at https://www.suncalc.org/
