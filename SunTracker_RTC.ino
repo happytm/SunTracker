@@ -1,7 +1,7 @@
 #include <sys/time.h>
 
 RTC_DATA_ATTR int bootCount; 
-RTC_DATA_ATTR int sun_azimuth, sun_elevation, panPosition, tiltPosition, sunriseAzimuth, sunriseSaved;
+RTC_DATA_ATTR int sun_azimuth, sun_elevation, panPosition, tiltPosition, sunriseAzimuth, sunriseSaved; pan_μS_CW; pan_μS_CCW; tilt_μS_CW; tilt_μS_CCW;
 RTC_DATA_ATTR int sleepMinutes = 1;      // Adjust sleep time in minutes if needed. 15-30 minutes are ideal sleep time to conserve battery and at the same time relatively frequent movement of tracker.
 
 int timezone = 4;                 // Use 4 or 5 for eastern USA.
@@ -21,7 +21,7 @@ void setup() {
 
   Serial.begin(115200); delay(500);
   long upTime = bootCount * sleepMinutes;
-  Serial.print("Up time "); Serial.print(upTime); Serial.println(" minutes.");
+  Serial.print("Up time:- "); Serial.print(upTime); Serial.println(" minutes.");
   
   if (!bootCount)
   {
@@ -38,9 +38,12 @@ void setup() {
   }
   ++bootCount; 
   
-  Serial.print("Last pan position was:  ");   Serial.println(panPosition);
+  Serial.print("Last pan position was:   ");   Serial.println(panPosition);
   Serial.print("Last tilt position was: ");  Serial.println(tiltPosition);
-  
+  //ToDo using https://github.com/ruenahcmohr/EGMK :
+  //Serial.print("Now we are going to move to new pan postion target using : ");  Serial.print(pan_μs_CW); Serial.print("pan micro seconds forward and "); Serial.print(pan__μs_CW); Serial.println("pan micro seconds reverse."); 
+  //Serial.print("Now we are going to move to new tilt postion target using : ");  Serial.print(tilt_μs_CW); Serial.print("tilt micro seconds forward and "); Serial.print(tilt_μs_CCW); Serial.println("tilt micro seconds reverse."); 
+
 } // End of setup.
 
 void loop() {
