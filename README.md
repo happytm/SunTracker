@@ -14,7 +14,7 @@
 
 ### To Do:
 
- - Implement code for inexpensive modified 28BYJ-48 12V Stepper Motor.
+ - Implement code for inexpensive modified 28BYJ-48 12V Stepper Motor for prototype.
  
  - Implement code for DC brushed motors control using RZ7899, BDR6133, TA6586 or BTS7960.
    - https://alexgyver.ru/lessons/dc-motors/
