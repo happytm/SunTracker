@@ -1,7 +1,7 @@
 #include <sys/time.h>
 
 RTC_DATA_ATTR int bootCount; 
-RTC_DATA_ATTR int sun_azimuth, sun_elevation, panPosition, tiltPosition, sunriseAzimuth, sunriseSaved; pan_μS_CW; pan_μS_CCW; tilt_μS_CW; tilt_μS_CCW;
+RTC_DATA_ATTR int sun_azimuth, sun_elevation, panPosition, tiltPosition, sunriseAzimuth, sunriseSaved; 
 RTC_DATA_ATTR int sleepMinutes = 1;      // Adjust sleep time in minutes if needed. 15-30 minutes are ideal sleep time to conserve battery and at the same time relatively frequent movement of tracker.
 
 int timezone = 4;                 // Use 4 or 5 for eastern USA.
